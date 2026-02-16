@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Ridiculous Dinner Wheel</title>
+<style>
+body{
+background: radial-gradient(circle,#1a0033,#000);
+color:white;
+font-family:system-ui, sans-serif;
+text-align:center;
+}
+h1{
+font-size:42px;
+text-shadow:0 0 15px magenta,0 0 25px cyan;
+}
+canvas{
+margin:20px auto;
+display:block;
+border-radius:50%;
+box-shadow:0 0 40px magenta,0 0 80px cyan;
+}
+button{
+font-size:28px;
+padding:18px 40px;
+border:none;
+border-radius:14px;
+background:linear-gradient(45deg,magenta,cyan);
+color:black;
+font-weight:bold;
+cursor:pointer;
+}
+button:active{transform:scale(.95)}
+#winner{
+font-size:40px;
+margin-top:20px;
+font-weight:900;
+opacity:0;
+}
+.flash{
+animation:flash 0.6s infinite alternate;
+}
+@keyframes flash{
+from{text-shadow:0 0 10px yellow,0 0 25px red}
+to{text-shadow:0 0 25px white,0 0 50px yellow}
+}
+</style>
+</head>
+
+<body>
+
+<h1>🍔 THE DINNER DECIDER OF DESTINY 🍕</h1>
+<button onclick="spin()">SPIN THE DAMN WHEEL</button>
+
+<canvas id="wheel" width="500" height="500"></canvas>
+
+<div id="winner"></div>
+
+<script>
+const options=[
+"Rocas Charleston",
+"KC Buffet",
+"Kita",
+"Pies",
+"Qdoba",
+"IHOP KC",
+"Crapplebee’s",
+"Black Sheep",
+"Slob Evans"
+];
+
+const canvas=document.getElementById("wheel");
+const ctx=canvas.getContext("2d");
+const r=canvas.width/2;
+
+let angle=0;
+let spinning=false;
+
+function draw(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+const slice=2*Math.PI/options.length;
+
+options.forEach((o,i)=>{
+ctx.beginPath();
+ctx.moveTo(r,r);
+ctx.arc(r,r,r-5,i*slice+angle,(i+1)*slice+angle);
+ctx.fillStyle=`hsl(${i*360/options.length},85%,50%)`;
+ctx.fill();
+
+ctx.save();
+ctx.translate(r,r);
+ctx.rotate(i*slice+slice/2+angle);
+ctx.fillStyle="white";
+ctx.font="bold 18px sans-serif";
+ctx.textAlign="right";
+ctx.fillText(o,r-20,6);
+ctx.restore();
+});
+
+// pointer
+ctx.fillStyle="white";
+ctx.beginPath();
+ctx.moveTo(r,8);
+ctx.lineTo(r-15,35);
+ctx.lineTo(r+15,35);
+ctx.fill();
+}
+
+draw();
+
+function beep(freq,time){
+const a=new (window.AudioContext||window.webkitAudioContext)();
+const o=a.createOscillator();
+const g=a.createGain();
+o.connect(g); g.connect(a.destination);
+o.frequency.value=freq;
+o.start();
+g.gain.setValueAtTime(.1,a.currentTime);
+g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+time);
+o.stop(a.currentTime+time);
+}
+
+function spin(){
+
+if(spinning) return;
+spinning=true;
+document.getElementById("winner").style.opacity=0;
+
+let velocity=Math.random()*0.45+0.45;
+
+function frame(){
+angle+=velocity;
+velocity*=0.985;
+
+if(Math.random()<0.3) beep(400+Math.random()*200,.03);
+
+draw();
+
+if(velocity>0.002){
+requestAnimationFrame(frame);
+} else {
+
+spinning=false;
+
+const slice=2*Math.PI/options.length;
+let index=Math.floor((options.length-(angle%(2*Math.PI))/slice))%options.length;
+const result=options[index];
+
+// victory fanfare
+beep(700,.12);
+setTimeout(()=>beep(900,.15),120);
+setTimeout(()=>beep(1200,.22),260);
+
+const w=document.getElementById("winner");
+w.innerHTML="🍽️ YOU'RE EATING:<br>"+result.toUpperCase()+" 🍽️";
+w.style.opacity=1;
+w.classList.add("flash");
+}
+}
+frame();
+}
+</script>
+
+</body>
+</html>
