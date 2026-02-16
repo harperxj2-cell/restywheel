@@ -2,61 +2,77 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Ridiculous Dinner Wheel</title>
+<title>Dinner Decider</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 body{
-background: radial-gradient(circle,#1a0033,#000);
-color:white;
-font-family:system-ui, sans-serif;
-text-align:center;
+  margin:0;
+  background:radial-gradient(circle at center,#120022,#000);
+  color:white;
+  font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  text-align:center;
 }
+
 h1{
-font-size:42px;
-text-shadow:0 0 15px magenta,0 0 25px cyan;
+  font-size:clamp(26px,6vw,42px);
+  margin-top:18px;
+  text-shadow:0 0 12px #ff00ff,0 0 22px #00eaff;
 }
+
 canvas{
-margin:20px auto;
-display:block;
-border-radius:50%;
-box-shadow:0 0 40px magenta,0 0 80px cyan;
+  width:92vw;
+  max-width:520px;
+  height:auto;
+  display:block;
+  margin:20px auto;
+  border-radius:50%;
+  box-shadow:0 0 30px #ff00ff,0 0 70px #00eaff;
 }
+
 button{
-font-size:28px;
-padding:18px 40px;
-border:none;
-border-radius:14px;
-background:linear-gradient(45deg,magenta,cyan);
-color:black;
-font-weight:bold;
-cursor:pointer;
+  font-size:clamp(20px,5vw,28px);
+  padding:18px 36px;
+  border:none;
+  border-radius:16px;
+  background:linear-gradient(45deg,#ff00ff,#00eaff);
+  color:black;
+  font-weight:800;
+  margin-top:10px;
 }
+
 button:active{transform:scale(.95)}
+
 #winner{
-font-size:40px;
-margin-top:20px;
-font-weight:900;
-opacity:0;
+  font-size:clamp(26px,6vw,40px);
+  margin:22px 10px;
+  font-weight:900;
+  opacity:0;
 }
+
 .flash{
-animation:flash 0.6s infinite alternate;
+  animation:flash .7s infinite alternate;
 }
+
 @keyframes flash{
-from{text-shadow:0 0 10px yellow,0 0 25px red}
-to{text-shadow:0 0 25px white,0 0 50px yellow}
+  from{text-shadow:0 0 10px #fff,0 0 25px #ff00ff}
+  to{text-shadow:0 0 25px #fff,0 0 55px #00eaff}
 }
 </style>
 </head>
 
 <body>
 
-<h1>🍔 THE DINNER DECIDER OF DESTINY 🍕</h1>
-<button onclick="spin()">SPIN THE DAMN WHEEL</button>
+<h1>🍔 DINNER DECIDER 🍕</h1>
+<button onclick="spin()">SPIN</button>
 
-<canvas id="wheel" width="500" height="500"></canvas>
+<canvas id="wheel" width="600" height="600"></canvas>
 
 <div id="winner"></div>
 
 <script>
+
 const options=[
 "Rocas Charleston",
 "KC Buffet",
@@ -69,6 +85,13 @@ const options=[
 "Slob Evans"
 ];
 
+// neon casino palette (no rainbow)
+const colors=[
+"#ff00ff","#00eaff","#ff2a6d",
+"#00ffa6","#ffd400","#9d6bff",
+"#00d4ff","#ff7a00","#39ff14"
+];
+
 const canvas=document.getElementById("wheel");
 const ctx=canvas.getContext("2d");
 const r=canvas.width/2;
@@ -77,89 +100,97 @@ let angle=0;
 let spinning=false;
 
 function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-const slice=2*Math.PI/options.length;
 
-options.forEach((o,i)=>{
-ctx.beginPath();
-ctx.moveTo(r,r);
-ctx.arc(r,r,r-5,i*slice+angle,(i+1)*slice+angle);
-ctx.fillStyle=`hsl(${i*360/options.length},85%,50%)`;
-ctx.fill();
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const slice=2*Math.PI/options.length;
 
-ctx.save();
-ctx.translate(r,r);
-ctx.rotate(i*slice+slice/2+angle);
-ctx.fillStyle="white";
-ctx.font="bold 18px sans-serif";
-ctx.textAlign="right";
-ctx.fillText(o,r-20,6);
-ctx.restore();
-});
+  options.forEach((o,i)=>{
 
-// pointer
-ctx.fillStyle="white";
-ctx.beginPath();
-ctx.moveTo(r,8);
-ctx.lineTo(r-15,35);
-ctx.lineTo(r+15,35);
-ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(r,r);
+    ctx.arc(r,r,r-5,i*slice+angle,(i+1)*slice+angle);
+    ctx.fillStyle=colors[i%colors.length];
+    ctx.fill();
+
+    ctx.save();
+    ctx.translate(r,r);
+    ctx.rotate(i*slice+slice/2+angle);
+
+    ctx.fillStyle="white";
+    ctx.font="bold 22px system-ui";
+    ctx.textAlign="right";
+    ctx.fillText(o,r-30,8);
+
+    ctx.restore();
+  });
+
+  // RIGHT-SIDE POINTER  ✅
+  ctx.fillStyle="white";
+  ctx.beginPath();
+  ctx.moveTo(canvas.width-8,r);
+  ctx.lineTo(canvas.width-40,r-18);
+  ctx.lineTo(canvas.width-40,r+18);
+  ctx.fill();
 }
 
 draw();
 
 function beep(freq,time){
-const a=new (window.AudioContext||window.webkitAudioContext)();
-const o=a.createOscillator();
-const g=a.createGain();
-o.connect(g); g.connect(a.destination);
-o.frequency.value=freq;
-o.start();
-g.gain.setValueAtTime(.1,a.currentTime);
-g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+time);
-o.stop(a.currentTime+time);
+  const a=new(window.AudioContext||window.webkitAudioContext)();
+  const o=a.createOscillator();
+  const g=a.createGain();
+  o.connect(g); g.connect(a.destination);
+  o.frequency.value=freq;
+  o.start();
+  g.gain.setValueAtTime(.1,a.currentTime);
+  g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+time);
+  o.stop(a.currentTime+time);
 }
 
 function spin(){
 
-if(spinning) return;
-spinning=true;
-document.getElementById("winner").style.opacity=0;
+  if(spinning) return;
+  spinning=true;
+  document.getElementById("winner").style.opacity=0;
 
-let velocity=Math.random()*0.45+0.45;
+  let velocity=Math.random()*0.5+0.45;
 
-function frame(){
-angle+=velocity;
-velocity*=0.985;
+  function frame(){
 
-if(Math.random()<0.3) beep(400+Math.random()*200,.03);
+    angle+=velocity;
+    velocity*=0.986;
 
-draw();
+    if(Math.random()<0.35) beep(500+Math.random()*300,.03);
 
-if(velocity>0.002){
-requestAnimationFrame(frame);
-} else {
+    draw();
 
-spinning=false;
+    if(velocity>0.002){
+      requestAnimationFrame(frame);
+    } else {
 
-const slice=2*Math.PI/options.length;
-let index=Math.floor((options.length-(angle%(2*Math.PI))/slice))%options.length;
-const result=options[index];
+      spinning=false;
 
-// victory fanfare
-beep(700,.12);
-setTimeout(()=>beep(900,.15),120);
-setTimeout(()=>beep(1200,.22),260);
+      const slice=2*Math.PI/options.length;
 
-const w=document.getElementById("winner");
-w.innerHTML="🍽️ YOU'RE EATING:<br>"+result.toUpperCase()+" 🍽️";
-w.style.opacity=1;
-w.classList.add("flash");
+      // adjusted for RIGHT pointer
+      let index=Math.floor((options.length-((angle+Math.PI/2)%(2*Math.PI))/slice))%options.length;
+
+      const result=options[index];
+
+      beep(800,.12);
+      setTimeout(()=>beep(1100,.15),140);
+      setTimeout(()=>beep(1400,.22),280);
+
+      const w=document.getElementById("winner");
+      w.innerHTML="🍽️ "+result.toUpperCase()+" 🍽️";
+      w.style.opacity=1;
+      w.classList.add("flash");
+    }
+  }
+
+  frame();
 }
-}
-frame();
-}
+
 </script>
-
 </body>
 </html>
