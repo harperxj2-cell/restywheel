@@ -2,72 +2,67 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ABSOLUTE CHAOS DINNER WHEEL</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dinner Wheel</title>
 
 <style>
 
 body{
 margin:0;
-background:radial-gradient(circle,#1a0033,#000);
+background:radial-gradient(circle,#140028,#000);
 color:white;
 font-family:-apple-system,BlinkMacSystemFont,system-ui;
 text-align:center;
-overflow-x:hidden;
 }
 
 h1{
-font-size:clamp(28px,7vw,46px);
-margin-top:18px;
-animation:pulse 2s infinite alternate;
+margin:12px 0 6px;
+font-size:clamp(26px,7vw,40px);
+text-shadow:0 0 12px #ff00ff,0 0 22px #00eaff;
 }
 
-@keyframes pulse{
-from{text-shadow:0 0 10px #ff00ff,0 0 20px #00eaff}
-to{text-shadow:0 0 30px #fff,0 0 60px #ff00ff}
-}
-
-canvas{
-width:94vw;
+#wheel{
+width:96vw;
 max-width:520px;
-margin:18px auto;
 display:block;
+margin:8px auto;
 border-radius:50%;
-box-shadow:0 0 25px #ff00ff,0 0 80px #00eaff;
+box-shadow:0 0 20px #ff00ff,0 0 70px #00eaff;
 }
 
 button{
-font-size:clamp(20px,5vw,30px);
-padding:18px 34px;
+width:92vw;
+max-width:420px;
+font-size:clamp(22px,6vw,30px);
+padding:18px;
 border:none;
-border-radius:16px;
-margin:8px;
+border-radius:18px;
 font-weight:900;
 background:linear-gradient(45deg,#ff00ff,#00eaff);
 color:black;
+margin:10px 0 6px;
 }
 
 #winner{
-font-size:clamp(28px,7vw,48px);
-margin:20px;
+font-size:clamp(28px,7vw,46px);
+margin:14px;
 font-weight:900;
 opacity:0;
 }
 
 .flash{
-animation:flash .5s infinite alternate;
+animation:flash .6s infinite alternate;
 }
 
 @keyframes flash{
-from{transform:scale(1);text-shadow:0 0 10px white,0 0 30px #ff00ff}
-to{transform:scale(1.05);text-shadow:0 0 25px white,0 0 70px #00eaff}
+from{text-shadow:0 0 10px white,0 0 30px #ff00ff}
+to{text-shadow:0 0 25px white,0 0 70px #00eaff}
 }
 
-/* CONFETTI */
+/* confetti */
 .confetti{
 position:fixed;
-width:8px;
-height:8px;
+width:8px;height:8px;
 top:-10px;
 pointer-events:none;
 animation:fall linear forwards;
@@ -82,18 +77,15 @@ to{transform:translateY(110vh) rotate(720deg);}
 
 <body>
 
-<h1>🎰 DINNER WHEEL OF DESTINY 🎰</h1>
+<h1>🍔 DINNER DECIDER 🍕</h1>
 
-<button onclick="spin()">SPIN THE DAMN WHEEL</button>
-<button onclick="spin()">SPIN AGAIN (THAT PLACE SUCKS)</button>
+<button onclick="spin()">SPIN</button>
 
 <canvas id="wheel" width="600" height="600"></canvas>
 
 <div id="winner"></div>
 
 <script>
-
-// -------- OPTIONS --------
 
 const options=[
 "Rocas Charleston",
@@ -113,8 +105,6 @@ const colors=[
 "#00d4ff","#ff7a00","#39ff14"
 ];
 
-// -------- CANVAS --------
-
 const canvas=document.getElementById("wheel");
 const ctx=canvas.getContext("2d");
 const r=canvas.width/2;
@@ -125,7 +115,11 @@ let spinning=false;
 function draw(){
 
 ctx.clearRect(0,0,canvas.width,canvas.height);
+
 const slice=2*Math.PI/options.length;
+
+// dynamic font size for iPhone
+const fontSize=Math.max(14,Math.min(22,520/options.length));
 
 options.forEach((o,i)=>{
 
@@ -138,28 +132,29 @@ ctx.fill();
 ctx.save();
 ctx.translate(r,r);
 ctx.rotate(i*slice+slice/2+angle);
+
 ctx.fillStyle="white";
-ctx.font="bold 22px system-ui";
+ctx.font="bold "+fontSize+"px system-ui";
 ctx.textAlign="right";
-ctx.fillText(o,r-30,8);
+ctx.fillText(o,r-28,6);
+
 ctx.restore();
 
 });
 
-// RIGHT SIDE POINTER
+// RIGHT POINTER
 ctx.fillStyle="white";
 ctx.beginPath();
-ctx.moveTo(canvas.width-8,r);
-ctx.lineTo(canvas.width-44,r-20);
-ctx.lineTo(canvas.width-44,r+20);
+ctx.moveTo(canvas.width-6,r);
+ctx.lineTo(canvas.width-46,r-22);
+ctx.lineTo(canvas.width-46,r+22);
 ctx.fill();
 
 }
 
 draw();
 
-// -------- SOUNDS --------
-
+// tick sound
 function tick(){
 const a=new(window.AudioContext||window.webkitAudioContext)();
 const o=a.createOscillator();
@@ -172,11 +167,9 @@ g.gain.exponentialRampToValueAtTime(.0001,a.currentTime+.04);
 o.stop(a.currentTime+.04);
 }
 
-// -------- CONFETTI --------
-
+// confetti
 function confetti(){
-
-for(let i=0;i<120;i++){
+for(let i=0;i<100;i++){
 let c=document.createElement("div");
 c.className="confetti";
 c.style.left=Math.random()*100+"vw";
@@ -185,25 +178,20 @@ c.style.animationDuration=(Math.random()*2+2)+"s";
 document.body.appendChild(c);
 setTimeout(()=>c.remove(),4000);
 }
-
 }
 
-// -------- VOICE --------
-
+// voice
 function announce(text){
-const msg=new SpeechSynthesisUtterance("The wheel has chosen... "+text);
-msg.rate=.9;
+let msg=new SpeechSynthesisUtterance("Dinner choice is "+text);
+msg.rate=.95;
 msg.pitch=1.1;
 speechSynthesis.speak(msg);
 }
-
-// -------- SPIN --------
 
 function spin(){
 
 if(spinning) return;
 spinning=true;
-
 document.getElementById("winner").style.opacity=0;
 
 let velocity=Math.random()*0.55+0.45;
@@ -213,32 +201,28 @@ function frame(){
 angle+=velocity;
 velocity*=0.987;
 
-if(Math.random()<0.4) tick();
+if(Math.random()<0.35) tick();
 
 draw();
 
 if(velocity>0.002){
-
 requestAnimationFrame(frame);
-
 }else{
 
 spinning=false;
 
 const slice=2*Math.PI/options.length;
 
-// RIGHT POINTER EXACT MATCH
+// EXACT RIGHT POINTER MATCH
 let pointer=(0-angle)%(2*Math.PI);
 if(pointer<0) pointer+=2*Math.PI;
 
 let index=Math.floor(pointer/slice)%options.length;
 let result=options[index];
 
-// vibration (mobile supported browsers)
 if(navigator.vibrate) navigator.vibrate([200,100,200]);
 
 confetti();
-
 announce(result);
 
 const w=document.getElementById("winner");
@@ -251,7 +235,6 @@ w.classList.add("flash");
 }
 
 frame();
-
 }
 
 </script>
